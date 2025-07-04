@@ -1,0 +1,77 @@
+﻿<body onbeforeunload="saveList()" onload="loadList()">
+    <header>This is your To Do list! What will you do today?</header>
+    <div id="todo-container">
+        <div id="wrapper">
+            <textarea placeholder="What do you want to do today?" type="text" id="todo-input" class="todo-input" oninput="handleInput(this)"></textarea>
+            <button onclick="removeFirstInput()">DELETE</button>
+        </div>
+    </div>
+</body>
+<script>
+    function handleInput(input) {
+        const container = document.getElementById("todo-container");
+        const inputs = container.querySelectorAll(".todo-input");
+        const isLastInput = input === inputs[inputs.length - 1]
+        if (isLastInput && input.value.trim() !== "") {
+            const newInputAndButtonWrapper = document.createElement("div");
+            const newInput = document.createElement("textarea");
+            newInput.type = "text";
+            newInput.className = "todo-input";
+            newInput.placeholder = "Nice! Whats next?";
+            newInput.oninput = function () {
+                handleInput(this);
+            };
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "DELETE";
+            deleteButton.onclick = function () {
+                container.removeChild(newInputAndButtonWrapper);
+            }
+            newInputAndButtonWrapper.appendChild(newInput);
+            newInputAndButtonWrapper.appendChild(deleteButton);
+            container.appendChild(newInputAndButtonWrapper);
+        }
+    }
+    function removeFirstInput() {
+        document.getElementById("todo-input").value="";
+        container.value = "";
+    }
+
+    window.onbeforeunload = function () {
+        const tasks = [];
+        document.querySelectorAll('.todo-input').forEach(input => {
+            if (input.value.trim() !== '') {
+                tasks.push(input.value);
+            }
+        });
+        localStorage.setItem("Tasks",JSON.stringify(tasks))
+    }
+    window.onload = function(){
+        const tasks = localStorage.getItem('Tasks');
+        const jsTasks = JSON.parse(tasks);
+        const firstInput = document.getElementById("todo-input");
+        const container = document.getElementById("todo-container");
+        if (jsTasks.length > 0) {
+            firstInput.value = jsTasks[0];
+            for (let index = 1; index < jsTasks.length; index++) {
+                const wrapper = document.createElement("div");
+
+                const input = document.createElement("textarea");
+                input.value = jsTasks[index];
+                input.className = "todo-input";
+                input.placeholder = "Nice! What's next?";
+                input.oninput = function () {
+                    handleInput(this);
+                };
+
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "DELETE";
+                deleteButton.onclick = function () {
+                    container.removeChild(wrapper);
+                };
+
+                wrapper.appendChild(input);
+                wrapper.appendChild(deleteButton);
+                container.appendChild(wrapper);}
+        }
+    }
+</script>
